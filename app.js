@@ -292,6 +292,22 @@ function placeOrder(){
     status: {text:'Recibido', cls:'prep'},
     coupon: state.coupon.code || null, discount: totals.discount
   };
+  // === 💾 Paso 3: Guardar pedido en Firebase ===
+  try {
+    const ordersRef = ref(db, "orders");
+    await push(ordersRef, order);
+    console.log("✅ Pedido enviado a Firebase:", order);
+  } catch (error) {
+    console.error("❌ Error al guardar pedido:", error);
+    alert("Error al conectar con el servidor, intenta nuevamente.");
+    return;
+  }
+
+  // 🧹 Limpieza y confirmación
+  alert("✅ Pedido enviado correctamente!");
+  state.cart = [];
+  renderCart();
+}
 
   ORDERS.push(order); LS.set('orders', ORDERS);
 
@@ -310,15 +326,44 @@ function placeOrder(){
 // ===== Tracking (ya configurado arriba) =====
 
 // ===== Trabajador: login/panel =====
-function workerLogin(){
-  const u=$('#user').value.trim(), p=$('#pass').value.trim();
-  if(u==='admin' && p==='1234'){
-    SESSION={role:'worker', client:null}; LS.set('session',SESSION);
-    $('#loginBox').style.display='none'; $('#dash').style.display='block';
-    renderOrdersTable(); renderMenuChips(); switchView('workerView');
-  }else $('#loginMsg').textContent='Credenciales incorrectas';
+function workerLogin() {
+  const u = $('#user').value.trim(),
+        p = $('#pass').value.trim();
+
+  if (u === 'admin' && p === '1234') {
+    SESSION = { role: 'worker', client: null };
+    LS.set('session', SESSION);
+
+    $('#loginBox').style.display = 'none';
+    $('#dash').style.display = 'block';
+    renderOrdersTable();
+    renderMenuChips();
+    switchView('workerView');
+
+    // === 🔁 Escuchar pedidos en tiempo real (Paso 4) ===
+    const ordersRef = ref(db, "orders");
+    onValue(ordersRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const pedidos = Object.entries(data).map(([id, pedido]) => ({ id, ...pedido }));
+      renderOrdersTable(pedidos);
+      console.log("📦 Pedidos actualizados en tiempo real:", pedidos);
+    });
+
+  } else {
+    $('#loginMsg').textContent = 'Credenciales incorrectas';
+  }
 }
-function workerLogout(){ SESSION={role:'guest', client:null}; LS.set('session',SESSION); $('#dash').style.display='none'; $('#loginBox').style.display='block'; switchView('clientView'); }
+
+// ===== Cerrar sesión =====
+function workerLogout() {
+  SESSION = { role: 'guest', client: null };
+  LS.set('session', SESSION);
+  $('#dash').style.display = 'none';
+  $('#loginBox').style.display = 'block';
+  switchView('clientView');
+}
+
+
 
 // ===== Tabla pedidos =====
 function renderOrdersTable(){
@@ -382,4 +427,5 @@ function renderMenuChips(){
     box.appendChild(div);
   });
 }
+
 
