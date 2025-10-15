@@ -396,14 +396,23 @@ function setStatus(id, s){
   const map = { 'Recibido':{text:'Recibido',cls:'prep'}, 'Preparando':{text:'Preparando',cls:'prep'}, 'En camino':{text:'En camino',cls:'road'}, 'Entregado':{text:'Entregado',cls:'done'}, 'Cancelado':{text:'Cancelado',cls:'danger'} };
   o.status = map[s] || {text:s,cls:'prep'}; LS.set('orders', ORDERS); renderOrdersTable();
 }
-function deleteOrder(id){
-  if(!confirm("¿Seguro que quieres eliminar este pedido? Esta acción no se puede deshacer.")) return;
-  ORDERS = ORDERS.filter(x=>x.id!==id);
-  LS.set('orders', ORDERS);
-  renderOrdersTable();
-  alert("Pedido eliminado correctamente.");
+// ===== Eliminar pedido desde Firebase =====
+async function deleteOrder(id) {
+  if (!confirm("¿Seguro que quieres eliminar este pedido? Esta acción no se puede deshacer.")) return;
+
+  try {
+    const orderRef = ref(db, "orders/" + id);
+    await remove(orderRef);
+    alert("🗑️ Pedido eliminado correctamente de Firebase.");
+  } catch (error) {
+    console.error("❌ Error al eliminar el pedido:", error);
+    alert("Error al eliminar el pedido. Intenta nuevamente.");
+  }
 }
+
+// Hacer disponible la función globalmente
 window.deleteOrder = deleteOrder;
+
 
 window.setStatus = setStatus;
 
@@ -427,5 +436,6 @@ function renderMenuChips(){
     box.appendChild(div);
   });
 }
+
 
 
