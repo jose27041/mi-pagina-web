@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FastMex — Antojitos a Domicilio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- NAV -->
+  <header class="site-header">
+    <div class="topbar">
+      <div class="topbar__brand">
+        <div class="brand-chip">MX</div>
+        <strong>Antojitos MX</strong>
+      </div>
+      <nav class="topbar__nav">
+        <a href="#menu">Menú</a>
+        <a href="#promos">Promos</a>
+        <a href="#contacto">Contacto</a>
+        <button id="btnTabCliente" class="btn btn-pill active">Cliente</button>
+        <button id="btnTabTrabajador" class="btn btn-pill">Trabajador</button>
+        <div class="cart-pill"><span id="orderCount">0 pedidos activos</span></div>
+      </nav>
+    </div>
+    <div class="promo-strip">
+      🎉 <b>Promo bienvenida:</b> usa el cupón <b>BIENVENIDO10</b> y obtén 10% OFF en tu primera compra (clientes registrados).
+      | Martes de <b>2x1</b> en tacos al pastor con <b>TACOS2X1</b>.
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- =============== CLIENTE =============== -->
+    <section id="view-cliente" class="page">
+      <!-- Hero -->
+      <section class="hero">
+        <article class="hero__left card">
+          <span class="badge badge-ship">Envío desde $4.000 COP</span>
+          <h1>Comida mexicana, fresca y sabrosa. 🚚🔥</h1>
+          <p>Ordena tacos, burritos, tortas y más. Personaliza tus ingredientes y recibe en tu puerta.</p>
+          <div class="hero__actions">
+            <a class="btn btn-primary" href="#menu">Ver menú</a>
+            <button class="btn btn-warm" id="btnToggleAccount">Mi cuenta</button>
+          </div>
+
+          <!-- Panel de cuenta Cliente -->
+          <div id="accountBox" class="account card" style="display:none">
+            <div id="loggedBox" style="display:none">
+              <div class="row">
+                <div>
+                  <b id="accName"></b> · <span class="muted" id="accPhone"></span>
+                </div>
+                <div class="row" style="gap:8px">
+                  <button class="btn btn-soft" id="btnLogoutClient">Cerrar sesión</button>
+                </div>
+              </div>
+              <small class="muted">¡Bienvenido! Tu cupón de bienvenida se aplica en la primera compra si no lo has usado aún.</small>
+            </div>
+
+            <div id="authBox">
+              <div class="tabs small">
+                <button class="active" data-panel="login">Iniciar sesión</button>
+                <button data-panel="register">Registrarme</button>
+              </div>
+
+              <div id="panel-login">
+                <div class="form-grid">
+                  <div>
+                    <label>Teléfono</label>
+                    <input id="clPhone" placeholder="3123456789">
+                  </div>
+                  <div>
+                    <label>Contraseña</label>
+                    <input id="clPass" type="password" placeholder="••••••">
+                  </div>
+                </div>
+                <div class="row">
+                  <button class="btn btn-primary" id="btnClientLogin">Entrar</button>
+                  <button class="btn btn-soft" id="btnGuest">Entrar como invitado</button>
+                  <span class="muted" id="authMsg"></span>
+                </div>
+              </div>
+
+              <div id="panel-register" style="display:none">
+                <div class="form-grid">
+                  <div>
+                    <label>Nombre y apellido</label>
+                    <input id="rgName" placeholder="Tu nombre">
+                  </div>
+                  <div>
+                    <label>Teléfono</label>
+                    <input id="rgPhone" placeholder="3123456789">
+                  </div>
+                  <div>
+                    <label>Contraseña</label>
+                    <input id="rgPass" type="password" placeholder="Crea una contraseña">
+                  </div>
+                  <div>
+                    <label>Confirmar contraseña</label>
+                    <input id="rgPass2" type="password" placeholder="Repite la contraseña">
+                  </div>
+                </div>
+                <div class="row">
+                  <button class="btn btn-primary" id="btnClientRegister">Crear cuenta</button>
+                  <span class="muted" id="regMsg"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="hero__right card">
+          <div class="hero-logo">🌮</div>
+          <h3>Antojitos MX</h3>
+          <small class="muted">Comida mexicana en Colombia</small>
+        </aside>
+      </section>
+
+      <!-- Menú -->
+      <section id="menu" class="menu-block card">
+        <div class="menu-block__head">
+          <h2>Menú digital</h2>
+          <div class="menu-search">
+            <input id="q" type="search" placeholder="Buscar: tacos, vegano, sin gluten…" />
+            <button id="btnClear" class="btn btn-soft">Limpiar</button>
+          </div>
+        </div>
+
+        <div class="categories" id="catBar"></div>
+
+        <div class="tabs">
+          <button class="active" data-panel="menu">Menú</button>
+          <button data-panel="seguimiento">Seguimiento</button>
+        </div>
+
+        <div class="panel" id="panel-menu">
+          <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="panel" id="panel-seguimiento" style="display:none">
+          <label for="trackId" class="lbl">Código de pedido</label>
+          <div class="track-row">
+            <input id="trackId" placeholder="Ej: FM-AB12"/>
+            <button class="btn btn-primary" id="btnTrack">Consultar</button>
+          </div>
+          <div id="trackResult" class="track-result"></div>
+        </div>
+      </section>
+
+      <!-- Promos -->
+      <section id="promos" class="promos card">
+        <h2>Promociones</h2>
+        <div class="promo-grid">
+          <div class="promo-card">
+            <div class="promo-emoji">🎁</div>
+            <h4>Bienvenida 10%</h4>
+            <p>Usa <b>BIENVENIDO10</b> en tu primera compra (requiere cuenta).</p>
+          </div>
+          <div class="promo-card">
+            <div class="promo-emoji">🌮</div>
+            <h4>Martes 2x1</h4>
+            <p>Tacos al pastor con <b>TACOS2X1</b>.</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- =============== TRABAJADOR =============== -->
+    <section id="view-trabajador" class="page" style="display:none">
+      <div class="card">
+        <div id="loginBox">
+          <h2>Ingreso de trabajadores</h2>
+          <p class="muted"
+           class="form-grid">
+            <div>
+              <label>Usuario</label>
+              <input id="user" placeholder=>
+            </div>
+            <div>
+              <label>Contraseña</label>
+              <input id="pass" type="password" placeholder=>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" id="btnLogin">Entrar</button>
+            <span id="loginMsg" class="muted"></span>
+          </div>
+        </div>
+
+        <div id="dash" style="display:none">
+          <div class="row">
+            <h2>Panel de Pedidos</h2>
+            <button class="btn btn-soft" id="btnLogout">Cerrar sesión</button>
+          </div>
+          <div class="card table-card">
+            <table id="tblPedidos">
+              <thead>
+                <tr>
+                  <th>Código</th><th>Cliente</th><th>Contacto</th><th>Items</th><th>Total</th><th>Estado</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <h3 style="margin-top:18px">Gestor de Menú</h3>
+          <div class="manager">
+            <div class="card">
+              <h4>Agregar nuevo producto</h4>
+              <div class="form-grid">
+                <div><label>Nombre</label><input id="mName" placeholder="Taco al pastor"/></div>
+                <div><label>Precio (COP)</label><input id="mPrice" type="number" placeholder="12000"/></div>
+                <div>
+                  <label>Categoría</label>
+                  <select id="mCat">
+                    <option>Tacos</option><option>Quesadillas</option><option>Burritos</option>
+                    <option>Combos</option><option>Bebidas</option><option>Postres</option>
+                    <option>Tortas</option><option>Tamales</option><option>Elotes & Esquites</option>
+                  </select>
+                </div>
+                <div><label>Imagen (URL)</label><input id="mImg" placeholder="https://.../taco.jpg"/></div>
+              </div>
+              <div class="row">
+                <button class="btn btn-primary" id="btnAddItem">Agregar</button>
+                <span id="addMsg" class="muted"></span>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4>Productos actuales</h4>
+              <div id="menuChips" class="list-inline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== CARRITO (solo CLIENTES) =============== -->
+    <aside id="cartSection" class="cart card">
+      <h3>Tu carrito</h3>
+      <div id="cartList"></div>
+
+      <div class="coupon">
+        <label for="inpCoupon">Cupón</label>
+        <div class="row">
+          <input id="inpCoupon" placeholder="BIENVENIDO10">
+          <button class="btn btn-soft" id="btnApplyCoupon">Aplicar</button>
+        </div>
+        <small class="muted">El 10% de bienvenida aplica en la primera compra de clientes registrados.</small>
+      </div>
+
+      <div class="totals">
+        <div class="row-between"><span>Subtotal</span><b id="tSubtotal">$0</b></div>
+        <div class="row-between"><span>Domicilio</span><b id="tShip">$0</b></div>
+        <div class="row-between"><span>Descuento</span><b id="tDisc">-$0</b></div>
+        <div class="row-between total"><span>Total</span><b id="tTotal">$0</b></div>
+      </div>
+
+      <p class="notice">Envío gratis a partir de $30.000 COP.</p>
+      <button class="btn btn-primary w-100" id="btnCheckout">Finalizar pedido</button>
+
+      <div id="checkoutBox" style="display:none" class="checkout">
+        <h4>Datos de entrega</h4>
+        <div class="form-grid">
+          <div><label>Nombre y Apellido</label><input id="cName"/></div>
+          <div><label>Teléfono</label><input id="cPhone"/></div>
+          <div><label>Dirección</label><input id="cAddr"/></div>
+          <div>
+            <label>Método de pago</label>
+            <select id="cPay"><option>Efectivo</option><option>Tarjeta</option><option>Nequi</option><option>Daviplata</option></select>
+          </div>
+          <div class="full"><label>Notas (opcional)</label><textarea id="cNote" rows="2" placeholder="Sin cebolla, por favor"></textarea></div>
+        </div>
+        <button class="btn btn-primary w-100" id="btnPlace">Confirmar pedido</button>
+        <div id="orderMsg" class="muted"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer" id="contacto">
+    <div class="footer-grid">
+      <div>
+        <h4>Antojitos MX</h4>
+        <p>Comida mexicana a domicilio y para llevar.</p>
+        <small>Horario: Lun–Dom 11:00–23:00</small>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul><li><a href="#">Privacidad</a></li><li><a href="#">Términos</a></li></ul>
+      </div>
+      <div>
+        <h4>Soporte</h4>
+        <a class="btn btn-warm">WhatsApp</a>
+      </div>
+    </div>
+    <div class="copy">© <span id="year"></span> Antojitos MX</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
