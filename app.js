@@ -1,3 +1,23 @@
+// === Firebase (integración directa para GitHub Pages) ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// Configuración de tu app Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDWMFZz89Q-Df2HkJGFyc1oJCffxcTSOyE",
+  authDomain: "antojitosmx-fd172.firebaseapp.com",
+  projectId: "antojitosmx-fd172",
+  storageBucket: "antojitosmx-fd172.appspot.com",
+  messagingSenderId: "491532667385",
+  appId: "1:491532667385:web:3a4dddfca7db54e7e39528",
+  measurementId: "G-887VLJ2FNP",
+  databaseURL: "https://antojitosmx-fd172-default-rtdb.firebaseio.com"
+};
+
+// Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 // ===== Utilidades =====
 const $ = (s, r=document)=>r.querySelector(s);
 const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
@@ -362,3 +382,4 @@ function renderMenuChips(){
     box.appendChild(div);
   });
 }
+
