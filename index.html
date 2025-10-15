@@ -168,73 +168,81 @@
     </section>
 
     <!-- =============== TRABAJADOR =============== -->
-    <section id="view-trabajador" class="page" style="display:none">
-      <div class="card">
-        <div id="loginBox">
-          <h2>Ingreso de trabajadores</h2>
-          <div class="form-grid">
-            <div>
-              <label>Usuario</label>
-              <input id="user" placeholder="Usuario">
-            </div>
-            <div>
-              <label>Contraseña</label>
-              <input id="pass" type="password" placeholder="Contraseña">
-            </div>
-          </div>
-          <div class="row">
-            <button class="btn btn-primary" id="btnLogin">Entrar</button>
-            <span id="loginMsg" class="muted"></span>
-          </div>
+<section id="view-trabajador" class="page" style="display:none">
+  <div class="card">
+    <div id="loginBox">
+      <h2>Ingreso de trabajadores</h2>
+      <div class="form-grid">
+        <div>
+          <label for="user">Usuario</label>
+          <input id="user" type="text" placeholder="admin">
         </div>
-
-        <div id="dash" style="display:none">
-          <div class="row">
-            <h2>Panel de Pedidos</h2>
-            <button class="btn btn-soft" id="btnLogout">Cerrar sesión</button>
-          </div>
-          <div class="card table-card">
-            <table id="tblPedidos">
-              <thead>
-                <tr>
-                  <th>Código</th><th>Cliente</th><th>Contacto</th><th>Items</th><th>Total</th><th>Estado</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <h3 style="margin-top:18px">Gestor de Menú</h3>
-          <div class="manager">
-            <div class="card">
-              <h4>Agregar nuevo producto</h4>
-              <div class="form-grid">
-                <div><label>Nombre</label><input id="mName" placeholder="Taco al pastor"/></div>
-                <div><label>Precio (COP)</label><input id="mPrice" type="number" placeholder="12000"/></div>
-                <div>
-                  <label>Categoría</label>
-                  <select id="mCat">
-                    <option>Tacos</option><option>Quesadillas</option><option>Burritos</option>
-                    <option>Combos</option><option>Bebidas</option><option>Postres</option>
-                    <option>Tortas</option><option>Tamales</option><option>Elotes & Esquites</option>
-                  </select>
-                </div>
-                <div><label>Imagen (URL)</label><input id="mImg" placeholder="https://.../taco.jpg"/></div>
-              </div>
-              <div class="row">
-                <button class="btn btn-primary" id="btnAddItem">Agregar</button>
-                <span id="addMsg" class="muted"></span>
-              </div>
-            </div>
-
-            <div class="card">
-              <h4>Productos actuales</h4>
-              <div id="menuChips" class="list-inline"></div>
-            </div>
-          </div>
+        <div>
+          <label for="pass">Contraseña</label>
+          <input id="pass" type="password" placeholder="1234">
         </div>
       </div>
-    </section>
+      <div class="row">
+        <button id="btnLogin" class="btn btn-primary">Entrar</button>
+        <span id="loginMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash" style="display:none">
+      <div class="row">
+        <h2>Panel de Pedidos</h2>
+        <button class="btn btn-soft" id="btnLogout">Cerrar sesión</button>
+      </div>
+      <div class="card table-card">
+        <table id="tblPedidos">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Cliente</th>
+              <th>Contacto</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:18px">Gestor de Menú</h3>
+      <div class="manager">
+        <div class="card">
+          <h4>Agregar nuevo producto</h4>
+          <div class="form-grid">
+            <div><label>Nombre</label><input id="mName" placeholder="Taco al pastor"></div>
+            <div><label>Precio (COP)</label><input id="mPrice" type="number" placeholder="12000"></div>
+            <div>
+              <label>Categoría</label>
+              <select id="mCat">
+                <option>Tacos</option><option>Quesadillas</option><option>Burritos</option>
+                <option>Combos</option><option>Bebidas</option><option>Postres</option>
+                <option>Tortas</option><option>Tamales</option><option>Elotes & Esquites</option>
+              </select>
+            </div>
+            <div><label>Imagen (URL)</label><input id="mImg" placeholder="https://.../taco.jpg"></div>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" id="btnAddItem">Agregar</button>
+            <span id="addMsg" class="muted"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Productos actuales</h4>
+          <div id="menuChips" class="list-inline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
     <!-- =============== CARRITO =============== -->
     <aside id="cartSection" class="cart card">
@@ -300,6 +308,7 @@
   <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
 
 
