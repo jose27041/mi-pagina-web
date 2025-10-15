@@ -25,6 +25,14 @@ const money = n => n.toLocaleString('es-CO',{style:'currency',currency:'COP',max
 const uid = () => 'FM-' + Math.random().toString(36).slice(2,6).toUpperCase();
 const nowYear = ()=> new Date().getFullYear();
 
+// Utilidad para eventos seguros
+const on = (sel, ev, fn, root=document)=>{
+  const el = root.querySelector(sel);
+  if(!el){ console.warn(`[on] No se encontró ${sel}`); return; }
+  el.addEventListener(ev, fn);
+  return el;
+};
+
 const LS = {
   get(k, d){ try{ return JSON.parse(localStorage.getItem(k) ?? 'null') ?? d }catch{ return d } },
   set(k, v){ localStorage.setItem(k, JSON.stringify(v)) },
@@ -45,69 +53,32 @@ const DEFAULT_MENU = [
 
 let MENU = LS.get('menuItems', null) || DEFAULT_MENU; LS.set('menuItems', MENU);
 let ORDERS = LS.get('orders', []);
-let USERS  = LS.get('users', []);   // [{name, phone, pass, usedWelcome}]
+let USERS  = LS.get('users', []);   
 let SESSION = LS.get('session', {role:'guest', client:null});
-
 const state = { cat:'Todas', q:'', cart:[], coupon:{code:null, amount:0} };
 
 // ===== Inicializar =====
 function init(){
   $('#year').textContent = nowYear();
-
-  $('#btnTabCliente').onclick = ()=>switchView('clientView');
-  $('#btnTabTrabajador').onclick = ()=>switchView('workerView');
-
-  // Tabs login/register
-  $$('#accountBox .tabs button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      $$('#accountBox .tabs button').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      $('#panel-login').style.display = b.dataset.panel==='login'?'block':'none';
-      $('#panel-register').style.display = b.dataset.panel==='register'?'block':'none';
-    });
-  });
-
-  $('#btnToggleAccount').onclick = ()=>{
-    const box = $('#accountBox');
-    box.style.display = (box.style.display==='none' || !box.style.display) ? 'block' : 'none';
-  };
-
-  // Buscador
-  $('#q').addEventListener('input', e=>{ state.q = e.target.value.toLowerCase(); renderMenu(); });
-  $('#btnClear').onclick = ()=>{ $('#q').value=''; state.q=''; renderMenu(); };
-
-  // Cliente: login / register / logout
-  $('#btnClientLogin').onclick = clientLogin;
-  $('#btnClientRegister').onclick = clientRegister;
-  $('#btnLogoutClient').onclick = clientLogout;
-  $('#btnGuest').onclick = ()=>{ SESSION={role:'guest', client:null}; LS.set('session',SESSION); hydrateClientUI(); };
-
-  // Tabs cliente
-  $$('.tabs:not(.small) button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      $$('.tabs:not(.small) button').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      $('#panel-menu').style.display = b.dataset.panel==='menu'?'block':'none';
-      $('#panel-seguimiento').style.display = b.dataset.panel==='seguimiento'?'block':'none';
-    });
-  });
-
-  // Carrito
-  $('#btnCheckout').onclick = ()=>{ const box=$('#checkoutBox'); box.style.display = box.style.display==='none'?'block':'none'; };
-  $('#btnPlace').onclick = placeOrder;
-  $('#btnApplyCoupon').onclick = applyCoupon;
-
-  // Tracking
-  $('#btnTrack').onclick = ()=>{
+  on('#btnTabCliente','click', ()=>switchView('clientView'));
+  on('#btnTabTrabajador','click', ()=>switchView('workerView'));
+  on('#btnClientLogin','click', clientLogin);
+  on('#btnClientRegister','click', clientRegister);
+  on('#btnLogoutClient','click', clientLogout);
+  on('#btnGuest','click', ()=>{ SESSION={role:'guest', client:null}; LS.set('session',SESSION); hydrateClientUI(); });
+  on('#q','input', e=>{ state.q = e.target.value.toLowerCase(); renderMenu(); });
+  on('#btnClear','click', ()=>{ $('#q').value=''; state.q=''; renderMenu(); });
+  on('#btnCheckout','click', ()=>{ const box=$('#checkoutBox'); box.style.display = box.style.display==='none'?'block':'none'; });
+  on('#btnPlace','click', placeOrder);
+  on('#btnApplyCoupon','click', applyCoupon);
+  on('#btnTrack','click', ()=>{
     const code = $('#trackId').value.trim();
     const o = ORDERS.find(x=>x.id===code);
     $('#trackResult').innerHTML = o ? `<div class="card"><b>Estado:</b> ${o.status.text}<br><span class="muted">Total: ${money(o.total)} • Cliente: ${o.customer.name}</span></div>` : '<p class="muted">No se encontró el pedido.</p>';
-  };
-
-  // Trabajador
-  $('#btnLogin').onclick = workerLogin;
-  $('#btnLogout').onclick = workerLogout;
-  $('#btnAddItem').onclick = addMenuItem;
+  });
+  on('#btnLogin','click', workerLogin);
+  on('#btnLogout','click', workerLogout);
+  on('#btnAddItem','click', addMenuItem);
 
   hydrateClientUI();
   renderCats(); renderMenu(); renderCart(); renderOrdersTable();
@@ -121,15 +92,15 @@ function switchView(target){
     $('#view-cliente').style.display='none';
     $('#view-trabajador').style.display='block';
     $('#cartSection').style.display='none';
-    $('#btnTabTrabajador').classList.add('active'); $('#btnTabCliente').classList.remove('active');
   } else {
     SESSION.role= SESSION.client ? 'client' : 'guest'; LS.set('session',SESSION);
     $('#view-cliente').style.display='block';
     $('#view-trabajador').style.display='none';
     $('#cartSection').style.display='block';
-    $('#btnTabCliente').classList.add('active'); $('#btnTabTrabajador').classList.remove('active');
   }
 }
+
+// ===== Cliente =====
 function hydrateClientUI(){
   if(SESSION.client){
     $('#loggedBox').style.display='block';
@@ -144,8 +115,6 @@ function hydrateClientUI(){
   }
   switchView('clientView');
 }
-
-// ===== Cliente =====
 function clientLogin(){
   const phone = $('#clPhone').value.trim();
   const pass = $('#clPass').value.trim();
@@ -245,17 +214,14 @@ function renderCart(){
   $('#tTotal').textContent    = money(t.total);
 }
 
-// (continúa con placeOrder y workerLogin 👇)
 // ===== Checkout / Pedido =====
 async function placeOrder(){
   if(!state.cart.length){ alert('Tu carrito está vacío'); return; }
-
   const name = $('#cName').value.trim();
   const phone = $('#cPhone').value.trim();
   const addr = $('#cAddr').value.trim();
   if(!name||!phone||!addr){ alert('Completa nombre, teléfono y dirección'); return; }
 
-  // Construir items y totales
   const items = state.cart.map(r=>{
     const p = MENU.find(x=>x.id===r.id);
     return { id:p.id, name:p.name, price:p.price, qty:r.qty };
@@ -264,108 +230,68 @@ async function placeOrder(){
   const id = uid();
 
   const order = {
-    id,
-    items,
-    total: totals.total,
-    customer: {
-      name, phone, addr,
-      pay: $('#cPay').value,
-      note: $('#cNote').value
-    },
+    id, items, total: totals.total,
+    customer: { name, phone, addr, pay: $('#cPay').value, note: $('#cNote').value },
     created: Date.now(),
     status: { text:'Recibido', cls:'prep' },
-    coupon: state.coupon.code || null,
-    discount: totals.discount
+    coupon: state.coupon.code || null, discount: totals.discount
   };
 
-  // 💾 Guardar pedido en Firebase con la CLAVE = id (coincide con eliminar/actualizar)
   try {
-    await update(ref(db, "orders/" + id), order); // equivalente a set() pero no pisa otros nodos
-    console.log("✅ Pedido enviado a Firebase:", order);
+    await update(ref(db, "orders/" + id), order);
   } catch (error) {
-    console.error("❌ Error al guardar pedido:", error);
-    alert("Error al conectar con el servidor, intenta nuevamente.");
-    return;
+    alert("Error al conectar con el servidor."); return;
   }
 
-  // 🧹 Limpieza + confirmación
   alert("✅ Pedido enviado correctamente!");
-  // Sincronía local para tracking inmediato (hasta que llegue onValue)
   ORDERS.push(order); LS.set('orders', ORDERS);
-
-  // Marcar cupón de bienvenida como usado si aplica
-  if(SESSION.client && state.coupon.code==='BIENVENIDO10' && totals.discount>0){
-    USERS = USERS.map(u=> u.phone===SESSION.client.phone ? ({...u, usedWelcome:true}) : u);
-    LS.set('users', USERS);
-  }
-
-  state.cart = [];
-  state.coupon = { code:null, amount:0 };
-  $('#inpCoupon').value = '';
-  renderCart();
-  renderOrdersTable();
-  $('#orderMsg').innerHTML = `✅ Pedido creado. Tu código es <b>${id}</b>.`;
+  state.cart = []; renderCart(); renderOrdersTable();
+  $('#orderMsg').innerHTML = `✅ Pedido creado. Código <b>${id}</b>`;
   $('#trackId').value = id;
-  $('#btnTabCliente').click();
 }
 
-// ===== Trabajador: login/panel =====
-function workerLogin() {
-  const u = $('#user').value.trim(),
-        p = $('#pass').value.trim();
-
-  if (u === 'admin' && p === '1234') {
-    SESSION = { role: 'worker', client: null };
-    LS.set('session', SESSION);
-
-    $('#loginBox').style.display = 'none';
-    $('#dash').style.display = 'block';
-    renderOrdersTable();
-    renderMenuChips();
+// ===== Trabajador =====
+function workerLogin(){
+  const u = $('#user').value.trim();
+  const p = $('#pass').value.trim();
+  if(u==='admin' && p==='1234'){
+    SESSION={role:'worker'}; LS.set('session',SESSION);
+    $('#loginBox').style.display='none';
+    $('#dash').style.display='block';
     switchView('workerView');
+    renderOrdersTable(); renderMenuChips();
 
-    // 🔁 Escuchar pedidos en tiempo real
-    const ordersRef = ref(db, "orders");
-    onValue(ordersRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      const pedidos = Object.entries(data).map(([key, pedido]) => ({ id: key, ...pedido }));
-      // Mantén sincronizado el arreglo local para tracking
-      ORDERS = pedidos; 
-      LS.set('orders', ORDERS);
+    const ordersRef = ref(db,'orders');
+    onValue(ordersRef,(snapshot)=>{
+      const data=snapshot.val()||{};
+      const pedidos=Object.entries(data).map(([k,v])=>({id:k,...v}));
+      ORDERS=pedidos; LS.set('orders',ORDERS);
       renderOrdersTable(pedidos);
-      console.log("📦 Pedidos actualizados en tiempo real:", pedidos);
     });
-
-  } else {
-    $('#loginMsg').textContent = 'Credenciales incorrectas';
-  }
+  }else $('#loginMsg').textContent='Credenciales incorrectas';
 }
-
-// ===== Cerrar sesión =====
-function workerLogout() {
-  SESSION = { role: 'guest', client: null };
-  LS.set('session', SESSION);
-  $('#dash').style.display = 'none';
-  $('#loginBox').style.display = 'block';
+function workerLogout(){
+  SESSION={role:'guest'}; LS.set('session',SESSION);
+  $('#dash').style.display='none';
+  $('#loginBox').style.display='block';
   switchView('clientView');
 }
 
 // ===== Tabla pedidos =====
-function renderOrdersTable(pedidos = ORDERS){
-  const tbody = $('#tblPedidos tbody'); 
-  if(!tbody) return;
+function renderOrdersTable(pedidos=ORDERS){
+  const tbody=$('#tblPedidos tbody');
+  if(!tbody)return;
   tbody.innerHTML='';
-
   pedidos.forEach(o=>{
-    const itemsTxt = o.items.map(i=>`${i.name} x${i.qty}`).join(', ');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+    const itemsTxt=o.items.map(i=>`${i.name} x${i.qty}`).join(', ');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
       <td>${o.id}</td>
-      <td>${o.customer?.name || ''}</td>
-      <td><div>${o.customer?.phone || ''}</div><div class="muted">${o.customer?.addr || ''}</div></td>
+      <td>${o.customer?.name||''}</td>
+      <td><div>${o.customer?.phone||''}</div><div class="muted">${o.customer?.addr||''}</div></td>
       <td>${itemsTxt}</td>
-      <td>${money(o.total || 0)}</td>
-      <td><span class="chip">${o.status?.text || 'Recibido'}</span></td>
+      <td>${money(o.total||0)}</td>
+      <td><span class="chip">${o.status?.text||'Recibido'}</span></td>
       <td class="row" style="gap:6px">
         <button class="btn btn-soft" onclick='setStatus("${o.id}","Preparando")'>Preparar</button>
         <button class="btn btn-soft" onclick='setStatus("${o.id}","En camino")'>En camino</button>
@@ -375,73 +301,56 @@ function renderOrdersTable(pedidos = ORDERS){
       </td>`;
     tbody.appendChild(tr);
   });
-
-  $('#orderCount').textContent = `${pedidos.length} pedidos activos`;
+  $('#orderCount').textContent=`${pedidos.length} pedidos activos`;
 }
 
-// ===== Cambiar estado (Firebase) =====
-async function setStatus(id, s){
-  try {
-    const map = {
-      'Recibido'  : { text:'Recibido',   cls:'prep'  },
-      'Preparando': { text:'Preparando', cls:'prep'  },
-      'En camino' : { text:'En camino',  cls:'road'  },
-      'Entregado' : { text:'Entregado',  cls:'done'  },
-      'Cancelado' : { text:'Cancelado',  cls:'danger'}
-    };
-    const newStatus = map[s] || { text:s, cls:'prep' };
-    await update(ref(db, `orders/${id}/status`), newStatus);
-    console.log(`✅ Estado actualizado: ${id} → ${s}`);
-  } catch (error) {
-    console.error("❌ Error al actualizar estado:", error);
-  }
+// ===== Cambiar estado / eliminar =====
+async function setStatus(id,s){
+  const map={
+    'Recibido':{text:'Recibido',cls:'prep'},
+    'Preparando':{text:'Preparando',cls:'prep'},
+    'En camino':{text:'En camino',cls:'road'},
+    'Entregado':{text:'Entregado',cls:'done'},
+    'Cancelado':{text:'Cancelado',cls:'danger'}
+  };
+  const newStatus=map[s]||{text:s,cls:'prep'};
+  await update(ref(db,`orders/${id}/status`),newStatus);
 }
-window.setStatus = setStatus;
-
-// ===== Eliminar pedido (Firebase) =====
-async function deleteOrder(id) {
-  if (!confirm("¿Seguro que quieres eliminar este pedido? Esta acción no se puede deshacer.")) return;
-  try {
-    await remove(ref(db, "orders/" + id));
-    alert("🗑️ Pedido eliminado correctamente de Firebase.");
-  } catch (error) {
-    console.error("❌ Error al eliminar el pedido:", error);
-    alert("Error al eliminar el pedido. Intenta nuevamente.");
-  }
+async function deleteOrder(id){
+  if(!confirm("¿Seguro que quieres eliminar este pedido?"))return;
+  await remove(ref(db,`orders/${id}`));
 }
-window.deleteOrder = deleteOrder;
+window.setStatus=setStatus;
+window.deleteOrder=deleteOrder;
 
-// ===== Gestor de menú =====
+// ===== Gestor menú =====
 function addMenuItem(){
-  const name = $('#mName').value.trim();
-  const price = parseInt($('#mPrice').value||'0', 10);
-  const cat = $('#mCat').value;
-  const img = $('#mImg').value.trim();
-  if(!name || !price){ $('#addMsg').textContent='Nombre y precio son obligatorios'; return; }
-  const id = 'i'+Math.random().toString(36).slice(2,6);
-  MENU.push({id,name,price,cat,img}); 
-  LS.set('menuItems', MENU);
-  $('#addMsg').textContent='Producto agregado'; 
-  renderCats(); renderMenu(); renderMenuChips();
-  // limpiar campos
-  $('#mName').value=''; $('#mPrice').value=''; $('#mImg').value='';
-  setTimeout(()=>$('#addMsg').textContent='',1500);
+  const name=$('#mName').value.trim();
+  const price=parseInt($('#mPrice').value||'0');
+  const cat=$('#mCat').value;
+  const img=$('#mImg').value.trim();
+  if(!name||!price){$('#addMsg').textContent='Nombre y precio requeridos';return;}
+  const id='i'+Math.random().toString(36).slice(2,6);
+  MENU.push({id,name,price,cat,img});
+  LS.set('menuItems',MENU);
+  renderCats();renderMenu();renderMenuChips();
+  $('#addMsg').textContent='Producto agregado';setTimeout(()=>$('#addMsg').textContent='',1500);
+  $('#mName').value='';$('#mPrice').value='';$('#mImg').value='';
 }
-function deleteItem(id){ 
-  MENU = MENU.filter(p=>p.id!==id); 
-  LS.set('menuItems', MENU); 
-  renderCats(); renderMenu(); renderMenuChips(); 
+function deleteItem(id){
+  MENU=MENU.filter(p=>p.id!==id);
+  LS.set('menuItems',MENU);
+  renderCats();renderMenu();renderMenuChips();
 }
-window.deleteItem = deleteItem;
+window.deleteItem=deleteItem;
 
 function renderMenuChips(){
-  const box = $('#menuChips'); 
-  if(!box) return; 
+  const box=$('#menuChips');if(!box)return;
   box.innerHTML='';
   MENU.forEach(p=>{
-    const div=document.createElement('div'); 
+    const div=document.createElement('div');
     div.className='chip';
-    div.innerHTML = `${p.name} · ${money(p.price)} <button class="btn btn-soft" style="margin-left:8px;padding:4px 8px" onclick='deleteItem("${p.id}")'>Eliminar</button>`;
+    div.innerHTML=`${p.name} · ${money(p.price)} <button class="btn btn-soft" style="margin-left:8px;padding:4px 8px" onclick='deleteItem("${p.id}")'>Eliminar</button>`;
     box.appendChild(div);
   });
 }
