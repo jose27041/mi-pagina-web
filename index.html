@@ -33,7 +33,6 @@
   <main class="container">
     <!-- =============== CLIENTE =============== -->
     <section id="view-cliente" class="page">
-      <!-- Hero -->
       <section class="hero">
         <article class="hero__left card">
           <span class="badge badge-ship">Envío desde $4.000 COP</span>
@@ -111,7 +110,9 @@
         </article>
 
         <aside class="hero__right card">
-          <div class="hero-logo">🌮</div>
+          <div class="hero-logo">
+            <img src="https://i.ibb.co/fHnMZbB/logo.png" alt="Logo Antojitos MX" style="width:90px;height:90px;border-radius:50%;">
+          </div>
           <h3>Antojitos MX</h3>
           <small class="muted">Comida mexicana en Colombia</small>
         </aside>
@@ -171,15 +172,14 @@
       <div class="card">
         <div id="loginBox">
           <h2>Ingreso de trabajadores</h2>
-          <p class="muted"
-           class="form-grid">
+          <div class="form-grid">
             <div>
               <label>Usuario</label>
-              <input id="user" placeholder=>
+              <input id="user" placeholder="Usuario">
             </div>
             <div>
               <label>Contraseña</label>
-              <input id="pass" type="password" placeholder=>
+              <input id="pass" type="password" placeholder="Contraseña">
             </div>
           </div>
           <div class="row">
@@ -236,7 +236,7 @@
       </div>
     </section>
 
-    <!-- =============== CARRITO (solo CLIENTES) =============== -->
+    <!-- =============== CARRITO =============== -->
     <aside id="cartSection" class="cart card">
       <h3>Tu carrito</h3>
       <div id="cartList"></div>
@@ -300,4 +300,6 @@
   <script type="module" src="app.js"></script>
 </body>
 </html>
+
+
 
